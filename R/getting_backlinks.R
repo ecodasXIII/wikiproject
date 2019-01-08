@@ -12,17 +12,19 @@ pages = WikipediR::page_backlinks(language = 'en', project = 'wikipedia',
 user_contribs = WikipediR::user_contributions(language = 'en', project = 'wikipedia', username = 'Jayzlimno', limit = 10000)$query$usercontribs
 
 start = pageviews::pageview_timestamps(timestamps = '2001010101')
-p = pageviews::article_pageviews(project = 'en.wikipedia', article = 'Limnology', user_type = 'user', start = '2001010101', end = '2018102401')
+p = pageviews::article_pageviews(project = 'en.wikipedia', article = 'Limnology', user_type = 'user', start = '2001010101', end = '2019010101')
 
-plot(p$views~p$date, type ='l',ylim=c(0,500))
+plot(p$views~p$date, type ='l',ylim=c(0,1200))
 abline(lm(p$views~p$date))
 
 # can also query multiple articles at once
-p = pageviews::article_pageviews(project = 'en.wikipedia', article = c('Limnology', 'Oceanography'), user_type = 'user', start = '2001010101', end = '2018102401')
+p = pageviews::article_pageviews(project = 'en.wikipedia', article = c('Limnology', 'Oceanography'), user_type = 'user', start = '2018010101', end = '2019010101')
 
 ggplot(p, aes(x = date, y = views, group = article, color = article)) +
   geom_line() +
-  geom_smooth(method = 'loess')
+  geom_smooth(method = 'loess') + 
+  theme_classic() + 
+  scale_y_log10()
 # there are dips in L&O during start of new year (maybe related to students and college exams?)
 
 p = pageviews::article_pageviews(project = 'en.wikipedia', article = c('Chemistry', 'Christmas', 'New Year'), user_type = 'user', start = '2001010101', end = '2018102401')
