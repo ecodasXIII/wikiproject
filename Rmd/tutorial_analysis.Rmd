@@ -1,0 +1,169 @@
+---
+title: "Editathon data review"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(readr)
+library(dplyr)
+library(stringr)
+library(tidyr)
+library(ggplot2)
+library(forcats)
+```
+
+Read in survey data
+
+```{r, message=FALSE}
+# Load edit-a-thon qualtrics data ####
+raw <- read_csv('../data/WikiProject_hackathon_qualtrics.csv') # Survey responses
+key <- read_csv('../data/questionKey.csv') # Question key
+```
+
+Get the text of a set of questions
+
+```{r}
+qq <- "Q8"
+
+key %>%
+  dplyr::filter(str_detect(Raw, qq)) %>%
+  pull(2)
+```
+
+## Using material 
+
+What percent of respondants used the tutorial materials provided by wikiproject LO?
+
+```{r}
+table(raw$Q6)
+```
+
+> 14 out of 15 people used the tutorial materials provided
+
+How many people reviewed each of the types of tutorial materials?
+
+```{r, warning=FALSE}
+raw %>%
+  dplyr::select(contains("Q7_")) %>% # pull out q7 answers
+  dplyr::select(-contains("TEXT")) %>% # not free text response
+  gather(question, material) %>% # reshape
+  group_by(question) %>% 
+  filter(!is.na(material)) %>% # only positive responses
+  summarise(n_used = n()) %>% # count
+  left_join(key, by = c("question" = "Raw")) %>% # add names
+  mutate(Key = purrr::map_chr(.x = Key, ~stringr::str_sub(.x, start = 47))) %>% # shorten
+  arrange(desc(n_used)) %>% dplyr::select(Key, n_used) # sort
+```
+
+What are the other materials used? 
+
+```{r}
+raw %>%
+  dplyr::select(Q7_9_TEXT) %>%
+  dplyr::filter(!is.na(Q7_9_TEXT))
+```
+
+> How to tag articles with the wiki project, tutorial - adding citations
+
+## Utility of material
+
+How useful were each of the types of material? (Q8_)
+
+```{r}
+utility_data <- raw %>%
+  dplyr::select(contains("Q8_")) %>% # pull out q8 answers
+  gather(question, utility) %>% # reshape
+  group_by(question, utility) %>% 
+  summarise(n_utility = n()) %>%
+  filter(!is.na(utility)) %>% # take out NAs
+  left_join(key, by = c("question" = "Raw")) %>% # add names
+  ungroup() %>% dplyr::select(-question) %>%
+  mutate(Key = purrr::map_chr(.x = Key, ~stringr::str_sub(.x, start = 12))) %>% # shorten
+  arrange(Key, desc(n_utility))
+  # spread(utility, n_utility) %>% View()
+```
+
+```{r}
+utility_levels <-  c("Extremely useful", "Very useful", "Moderately useful",
+    "Slightly useful", "Not at all useful", "Not applicable/ Did not use")
+
+utility_data <- utility_data %>%
+  mutate(utility_fct = forcats::as_factor(utility, utility_levels))
+```
+
+```{r}
+utility_data %>%
+  ggplot(aes(x = utility_fct, y = n_utility)) +
+  geom_bar(stat = "identity", position = "dodge", 
+           aes(fill = utility_fct), col = "black") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  xlab(element_blank()) + facet_wrap(vars(Key), ncol = 2) + 
+  coord_flip() + theme_bw() +
+  scale_fill_viridis_d() +
+  theme(legend.position = "none") + ylab(element_blank())
+```
+
+
+```{r, echo=FALSE}
+pdf("../figures/utility_of_materials1.pdf", width = 5.5, height = 4)
+utility_data %>%
+  ggplot(aes(x = utility_fct, y = n_utility)) +
+  geom_bar(stat = "identity", position = "dodge", 
+           aes(fill = utility_fct), col = "black") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  xlab(element_blank()) + facet_wrap(vars(Key), ncol = 2) + 
+  coord_flip() + theme_bw() +
+  scale_fill_viridis_d() +
+  theme(legend.position = "none") + ylab(element_blank())
+dev.off()
+```
+
+Stacked bar plot
+
+```{r}
+utility_data %>%
+  ggplot(aes(x = Key, y = n_utility)) +
+  geom_bar(stat = "identity", 
+           aes(fill = utility_fct), col = "black") +
+  # theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  coord_flip() + theme_bw() +
+  scale_fill_viridis_d() +
+  theme(legend.position = "bottom", 
+        legend.text = element_text(size = 7),
+          legend.title=element_blank()) +
+  xlab(element_blank()) + ylab(element_blank())
+```
+
+```{r, echo = FALSE}
+pdf("../figures/utility_of_materials2.pdf", width = 6, height = 3)
+utility_data %>%
+  ggplot(aes(x = Key, y = n_utility)) +
+  geom_bar(stat = "identity", 
+           aes(fill = utility_fct), col = "black") +
+  # theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  coord_flip() + theme_bw() +
+  scale_fill_viridis_d() +
+  theme(legend.position = "bottom", 
+        legend.text = element_text(size = 7),
+          legend.title=element_blank()) +
+  xlab(element_blank()) + ylab(element_blank())
+dev.off()
+```
+
+## Other suggestions and feedback about material
+
+Q9
+
+```{r}
+raw %>%
+  dplyr::select(Q9) %>%
+  filter(!is.na(Q9)) %>% pull(Q9)
+```
+
+> Video tutorial, more centralized location, wikipedia's citation template
