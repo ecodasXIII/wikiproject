@@ -1,4 +1,6 @@
 
+library(dplyr)
+library(ggplot2)
 library(WikipediR)
 library(pageviews)
 
