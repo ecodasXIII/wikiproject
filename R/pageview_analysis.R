@@ -35,3 +35,32 @@ ggplot(p, aes(x = date, y = views, group = article, color = article)) +
         axis.text = element_text(size = 13)) + 
   ylab('Daily Pageviews') 
 
+
+# ---- Project Pageviews ---- 
+
+# pages with WP L&O tag 
+pages = WikipediR::page_backlinks(language = 'en', project = 'wikipedia',
+                                  page = 'Wikipedia:WikiProject Limnology and Oceanography',
+                                  limit = 10000)$query$backlinks %>%  bind_rows() %>%
+  dplyr::slice(grep(pattern = 'Talk:', x = title)) %>% 
+  mutate(title = gsub(pattern = 'Talk:', replacement = '', x = title)) %>% 
+  pull(title)
+
+start = '2019010101'
+end = '2019030101'
+
+# mean article views per day within scope of WP L&O over specified date range 
+p = pageviews::article_pageviews(project = 'en.wikipedia', 
+                                 article = pages,
+                                 user_type = 'user', 
+                                 start = start, 
+                                 end = end) %>% 
+  group_by(article) %>% 
+  summarise(views = mean(views)) %>% 
+  arrange(desc(views))
+
+ggplot(p, aes(x = views)) + 
+  geom_histogram() + 
+  scale_x_log10()
+
+
