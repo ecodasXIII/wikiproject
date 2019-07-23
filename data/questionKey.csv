@@ -1,5 +1,6 @@
 Raw,Key
 User,UserID to maintain anonymity
+StartDate,DateTime survey started
 Q1,Consent
 Q2,Have you edited a Wikipedia page previously?
 Q3_1,What has kept you from editing previously? Did not know how to edit Wikipedia
@@ -13,6 +14,12 @@ Q5_2,What motivated you to edit Wikipedia pages in the past? A course or worksho
 Q5_3,What motivated you to edit Wikipedia pages in the past? An edit-a-thon type event
 Q5_4,What motivated you to edit Wikipedia pages in the past? Other (please describe)
 Q5_4_TEXT,What motivated you to edit Wikipedia pages in the past? Other (please describe) - Text
+Q58,Have you participated in a previous Limnology & Oceanography WikiProject edit-a-thon?
+Q60,Did you find editing Wikipedia to be easier or more difficult than during previous WikiProject L&O edit-a-thons?
+Q62,Did you edit the same pages in this edit-a-thon as in the previous WikiProject L&O edit-a-thon? (choose all that apply)
+Q63,How would you characterize the pages you edited in this edit-a-thon compared to the previous WikiProject L&O edit-a-thon?
+Q61,Please describe how your experience with this edit-a-thon differed from a previous edit-a-thon
+Q59,Did you use the provided tutorial materials during this or the previous edit-a-thon?
 Q6,"For this edit-a-thon, did you use any of the tutorial materials provided"
 Q7_1,Which instructional materials did you review? Mission Statement and Goals
 Q7_2,Which instructional materials did you review? Code of Conduct
