@@ -13,28 +13,32 @@ library(wesanderson)
 # 8,036 total articles from Web of Science for L&O, L&O Methods, and L&O Letters; 
 
 # bind all exports together 
-dir = 'data'
-journals = c('LO_pubs', 'LOM_pubs', 'LOL_pubs')
-for(journal in journals){
-  files = list.files(file.path(dir, journal))
-  for(i in files){
-    if(i == files[1] & journal == journals[1]){
-      lo_pubs = ReadBib(file = file.path(dir, journal, i))
-    }else{
-      lo_pubs = merge(lo_pubs, ReadBib(file = file.path(dir, journal, i)))
-    }
-  }
-}
+# dir = 'data'
+# journals = c('LO_pubs', 'LOM_pubs', 'LOL_pubs')
+# for(journal in journals){
+#   files = list.files(file.path(dir, journal))
+#   for(i in files){
+#     if(i == files[1] & journal == journals[1]){
+#       lo_pubs = ReadBib(file = file.path(dir, journal, i))
+#     }else{
+#       lo_pubs = merge(lo_pubs, ReadBib(file = file.path(dir, journal, i)))
+#     }
+#   }
+# }
+# 
+# # get all the Altmetrics of each publication
+# lo_metrics = list() 
+# for(i in 1:length(lo_pubs)){
+#   cur = tryCatch(altmetrics(doi = stringr::str_sub(lo_pubs[[i]]$doi, 2,-2), ),
+#                  error = function(e) e )
+#   lo_metrics[[i]] = cur
+# }
 
-# get all the Altmetrics of each publication
-lo_metrics = list() 
-for(i in 1:length(lo_pubs)){
-  cur = tryCatch(altmetrics(doi = stringr::str_sub(lo_pubs[[i]]$doi, 2,-2), ),
-                 error = function(e) e )
-  lo_metrics[[i]] = cur
-}
+# saveRDS(lo_pubs, file = 'results/lo_pubs.rds')
+# saveRDS(lo_metrics, file = 'results/lo_metrics.rds')
 
-saveRDS(lo_metrics, file = 'results/lo_metrics.rds')
+lo_pubs = readRDS('results/lo_pubs.rds')
+lo_metrics = readRDS('results/lo_metrics.rds')
 
 wiki_mentions = lo_metrics[grep('wikipedia', lo_metrics)]
 lo_pubs_wiki_mentions = lo_pubs[grep('wikipedia', lo_metrics)]
@@ -113,8 +117,8 @@ percent_plot = ggplot(plot_data,
                       aes(x= as.numeric(year), 
                           y = percent_articles_on_wiki,
                           color = journal)) + 
-  geom_line(alpha = .7)+
-  geom_point(size = 3) +
+  geom_line(alpha = .7, show.legend = F)+
+  geom_point(size = 3, show.legend = F) +
   theme_classic() +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_text(size = 16),
@@ -134,8 +138,8 @@ total_articles = ggplot(plot_data,
                       aes(x= as.numeric(year), 
                           y = total_articles,
                           color = journal)) + 
-  geom_line(alpha = .7, show.legend = F)+
-  geom_point(size = 3, show.legend = F) +
+  geom_line(alpha = .7)+
+  geom_point(size = 3) +
   theme_classic() +
   theme(axis.title.x = element_blank(), axis.text.x = element_blank(), 
         axis.title.y = element_text(size = 16),
