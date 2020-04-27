@@ -40,17 +40,17 @@ utility_data <- utility_data %>%
   mutate(utility_fct = factor(utility, levels = utility_levels))
 
 
-pdf("figures/comfort_of_functions.pdf", width = 6, height = 3)
-utility_data %>%
+comfort_of_func = utility_data %>%
   ggplot(aes(x = Key, y = n_utility, fill = utility_fct)) +
   geom_bar(stat = "identity", 
            aes(fill = utility_fct), col = "black") +
   coord_flip() + theme_bw() +
   scale_fill_viridis_d() +
   theme(legend.position = "bottom", 
-        legend.text = element_text(size = 6),
+        legend.text = element_text(size = 12),
         legend.title=element_blank(),
-        axis.text.y = element_text(size = 6)) +
+        axis.text.y = element_text(size = 12)) +
   xlab(element_blank()) + ylab(element_blank())
-dev.off()
+
+ggsave(filename = 'figures/comfort_of_functions.png', plot = comfort_of_func, width = 12, height = 6)
 
