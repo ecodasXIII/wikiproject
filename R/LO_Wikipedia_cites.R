@@ -99,6 +99,21 @@ plot_data = left_join(lo_pubs_year, lo_wiki_year, by = c('year', 'journal')) %>%
          total_articles = ifelse(is.na(percent_articles_on_wiki),NA, total_articles),
          articles = ifelse(is.na(percent_articles_on_wiki),NA, articles))
 
+
+cummulative_data = left_join(lo_pubs_year, lo_wiki_year, by = c('year', 'journal')) %>% 
+  mutate(articles =  ifelse(is.na(articles), 0, articles),
+         wikipedia_cites = ifelse(is.na(wikipedia_cites), 0, wikipedia_cites)) %>% 
+  group_by(journal) %>% 
+  mutate(cummulative_articles = cumsum(total_articles),
+         cummulative_wiki_cites = cumsum(articles),
+         percent_articles_on_wiki = cummulative_wiki_cites / cummulative_articles * 100, 
+         cummulative_articles = ifelse(is.na(percent_articles_on_wiki),NA, cummulative_articles),
+         cummulative_wiki_cites = ifelse(is.na(percent_articles_on_wiki),NA, cummulative_wiki_cites)) %>% 
+  ungroup() %>% 
+  select(journal, year, cummulative_articles, cummulative_wiki_cites, percent_articles_on_wiki)
+
+
+
 # plot 
 wiki_articles_plot = ggplot(plot_data, 
                  aes(x= as.Date(year, '%Y'), 
@@ -162,7 +177,7 @@ articles_wiki = ggplot(plot_data,
   geom_line(alpha = .7, show.legend = F)+
   geom_point(size = 3, show.legend = F) +
   theme_classic() +
-  theme(axis.title.x = element_blank(), axis.text.x = element_blank(), 
+  theme(axis.title.x = element_blank(), #axis.text.x = element_blank(), 
         axis.title.y = element_text(size = 16),
         axis.text = element_text(size = 16),
         legend.position = c(.2,.9), 
@@ -181,4 +196,66 @@ out = cowplot::plot_grid(total_articles, articles_wiki, percent_plot,
                          align = 'hv', nrow = 3, labels = c('a','b','c'))
   
 ggsave(filename = 'figures/LO_articles_wiki_all.png', plot = out, width = 6,
+       height = 12)
+
+
+
+cummulative_percent_plot = ggplot(cummulative_data, 
+                      aes(x= as.numeric(year), 
+                          y = percent_articles_on_wiki,
+                          color = journal)) + 
+  geom_line(alpha = .7, show.legend = F)+
+  geom_point(size = 3, show.legend = F) +
+  theme_classic() +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 16),
+        axis.text = element_text(size = 16),
+        legend.position = c(.2,.9), 
+        legend.title = element_blank()) + 
+  scale_color_manual(values = rev(cols), 
+                     labels = c('L&O: Methods', 'L&O: Letters', 'L&O')) + 
+  ylab('Articles cited on Wikipedia since 1985 (%)')
+
+cummulative_percent_plot
+
+cummulative_articles = ggplot(cummulative_data, 
+                                  aes(x= as.numeric(year), 
+                                      y = cummulative_articles,
+                                      color = journal)) + 
+  geom_line(alpha = .7)+
+  geom_point(size = 3) +
+  theme_classic() +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 16),
+        axis.text = element_text(size = 16),
+        legend.position = c(.2,.9), 
+        legend.title = element_blank()) + 
+  scale_color_manual(values = rev(cols), 
+                     labels = c('L&O: Methods', 'L&O: Letters', 'L&O')) + 
+  ylab('Articles since 1985 (n)') 
+
+cummulative_articles
+
+cummulative_wiki_articles = ggplot(cummulative_data, 
+                              aes(x= as.numeric(year), 
+                                  y = cummulative_wiki_cites,
+                                  color = journal)) + 
+  geom_line(alpha = .7)+
+  geom_point(size = 3) +
+  theme_classic() +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 16),
+        axis.text = element_text(size = 16),
+        legend.position = c(.2,.9), 
+        legend.title = element_blank()) + 
+  scale_color_manual(values = rev(cols), 
+                     labels = c('L&O: Methods', 'L&O: Letters', 'L&O')) + 
+  ylab('Articles cited on Wikipedia (n)') 
+
+cummulative_wiki_articles
+
+out = cowplot::plot_grid(cummulative_articles, articles_wiki, cummulative_percent_plot, 
+                         align = 'hv', nrow = 3, labels = c('a','b','c'), label_x = .96)
+
+ggsave(filename = 'figures/LO_cummulative_articles_wiki_all.png', plot = out, width = 6,
        height = 12)
