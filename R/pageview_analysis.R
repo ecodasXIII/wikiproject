@@ -59,8 +59,57 @@ p = pageviews::article_pageviews(project = 'en.wikipedia',
   summarise(views = mean(views)) %>% 
   arrange(desc(views))
 
+library(ggplot2)
+
 ggplot(p, aes(x = views)) + 
   geom_histogram() + 
   scale_x_log10()
 
+
+# pages with WP Lakes tag 
+# pages = WikipediR::page_backlinks(language = 'en', project = 'wikipedia',
+#                                   page = 'Wikipedia:WikiProject Lakes',
+#                                   limit = 20000)$query$backlinks %>%  bind_rows() %>%
+#   dplyr::slice(grep(pattern = 'Talk:', x = title)) %>% 
+#   mutate(title = gsub(pattern = 'Talk:', replacement = '', x = title)) %>% 
+#   pull(title)
+
+# binding article categories together 
+
+category_articles = sprintf('%s-Class Lakes articles', c('FA','FL','GA','B','C','Start','Stub','List','Disambig','NA'))
+
+pages = unlist(lapply(category_articles, function(cat){
+  WikipediR::pages_in_category(language = 'en', project = 'wikipedia', categories = cat, 
+                               limit = 20000)$query$categorymembers %>%  bind_rows() %>%
+    dplyr::slice(grep(pattern = 'Talk:', x = title)) %>% 
+    mutate(title = gsub(pattern = 'Talk:', replacement = '', x = title)) %>% 
+    pull(title)
+}))
+
+
+start = '2019010101'
+end = '2019040101'
+
+page_steps = seq(1, length(pages), by = 100) # breaking up cuz it takes a long time to pull pageviews and it throws an error
+# mean article views per day within scope of WP L&O over specified date range 
+out = data_frame()
+for(i in 14:(length(page_steps)-1)){
+  cur_pages = pages[page_steps[i]:page_steps[i+1]]
+  cur = pageviews::article_pageviews(project = 'en.wikipedia', 
+                                     article = cur_pages,
+                                     user_type = 'user', 
+                                     start = start, 
+                                     end = end) %>% 
+    group_by(article) %>% 
+    summarise(views = mean(views)) %>% 
+    arrange(desc(views))
+  out = bind_rows(out, cur)
+}
+
+
+library(ggplot2)
+
+ggplot(p, aes(x = views)) + 
+  geom_histogram() + 
+  scale_x_log10()
 

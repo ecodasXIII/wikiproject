@@ -6,6 +6,10 @@ library(pageviews)
 
 WikipediR::page_backlinks('en','wikipedia',page = 'Limnology', limit = 100, clean_response = F)$query$backlinks %>%bind_rows()
 
+outline_oceanography_links = WikipediR::page_links(language = 'en', project = 'wikipedia', 
+                                                            page = 'Outline of oceanography', 
+                                                            clean_response = T, limit = 10000)
+outline_oceanography_links
 
 pages = WikipediR::page_backlinks(language = 'en', project = 'wikipedia',
                                   page = 'Wikipedia:WikiProject Limnology and Oceanography',
