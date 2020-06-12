@@ -195,8 +195,8 @@ articles_wiki
 out = cowplot::plot_grid(total_articles, articles_wiki, percent_plot, 
                          align = 'hv', nrow = 3, labels = c('a','b','c'))
   
-ggsave(filename = 'figures/LO_articles_wiki_all.png', plot = out, width = 6,
-       height = 12)
+# ggsave(filename = 'figures/LO_articles_wiki_all.png', plot = out, width = 6,
+#        height = 12)
 
 
 
